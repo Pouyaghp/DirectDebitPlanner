@@ -1,48 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.pouya.directdebitplanner.HelloController">
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/25" fx:controller="com.pouya.directdebitplanner.HelloController">
 
     <top>
-        <Label text="Direct Debit Planner" style="-fx-font-size: 24px; -fx-padding: 15;" />
+        <Label style="-fx-font-size: 24px; -fx-padding: 15;" text="Direct Debit Planner">
+         <font>
+            <Font name="Chiller" size="12.0" />
+         </font></Label>
     </top>
 
     <center>
-        <VBox spacing="15" style="-fx-padding: 20;">
+        <VBox alignment="TOP_CENTER" spacing="15" style="-fx-padding: 20;">
 
             <TextField fx:id="nameField" promptText="Direct Debit Name" />
             <TextField fx:id="amountField" promptText="Amount" />
             <TextField fx:id="dateField" promptText="Due Date (e.g. 15th)" />
             <TextField fx:id="categoryField" promptText="Category" />
-            <TextArea fx:id="notesField" promptText="Notes" prefHeight="80" />
+            <TextArea fx:id="notesField" prefHeight="80" promptText="Notes" />
 
             <HBox spacing="10">
-                <Button text="Add Direct Debit" onAction="#addDebit" />
-                <Button text="Update Selected" onAction="#updateSelectedDebit" />
-                <Button text="Delete Selected" onAction="#deleteSelectedDebit" />
-                <Button text="Export to CSV" onAction="#exportToCsv" />
+                <Button onAction="#addDebit" text="Add Direct Debit" />
+                <Button onAction="#updateSelectedDebit" text="Update Selected" />
+                <Button onAction="#deleteSelectedDebit" text="Delete Selected" />
+                <Button onAction="#exportToCsv" text="Export to CSV" />
             </HBox>
 
             <TextField fx:id="searchField" promptText="Search by name, category, notes, or due date..." />
 
-            <Label text="Row colours: red = overdue-style, yellow = due within 3 days"
-                   style="-fx-font-size: 12px; -fx-text-fill: #666666;" />
+            <Label style="-fx-font-size: 12px; -fx-text-fill: #666666;" text="Row colours: red = overdue-style, yellow = due within 3 days" />
 
             <TableView fx:id="debitTable" prefHeight="250">
                 <columns>
-                    <TableColumn fx:id="nameColumn" text="Name" prefWidth="150" />
-                    <TableColumn fx:id="amountColumn" text="Amount" prefWidth="100" />
-                    <TableColumn fx:id="dateColumn" text="Due Date" prefWidth="100" />
-                    <TableColumn fx:id="categoryColumn" text="Category" prefWidth="120" />
-                    <TableColumn fx:id="notesColumn" text="Notes" prefWidth="200" />
+                    <TableColumn fx:id="nameColumn" prefWidth="150" text="Name" />
+                    <TableColumn fx:id="amountColumn" prefWidth="100" text="Amount" />
+                    <TableColumn fx:id="dateColumn" prefWidth="100" text="Due Date" />
+                    <TableColumn fx:id="categoryColumn" prefWidth="120" text="Category" />
+                    <TableColumn fx:id="notesColumn" prefWidth="200" text="Notes" />
                 </columns>
             </TableView>
 
-            <Label fx:id="totalLabel" text="Monthly Total: £0.00"
-                   style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+            <Label fx:id="totalLabel" style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Monthly Total: £0.00" />
 
         </VBox>
     </center>

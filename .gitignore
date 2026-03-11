@@ -37,3 +37,12 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+# IntelliJ build output
+out/
+
+# IntelliJ project settings
+.idea/
+
+# Database files (optional)
+*.db

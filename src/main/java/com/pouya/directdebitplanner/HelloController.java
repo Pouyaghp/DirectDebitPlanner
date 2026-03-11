@@ -7,7 +7,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.FileChooser;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -248,6 +252,48 @@ public class HelloController implements Initializable {
 
             showAlert(Alert.AlertType.INFORMATION, "Success", "Direct debit deleted successfully.");
         }
+    }
+
+    @FXML
+    public void exportToCsv() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Direct Debits CSV");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("CSV Files", "*.csv")
+        );
+        fileChooser.setInitialFileName("direct_debits.csv");
+
+        File file = fileChooser.showSaveDialog(debitTable.getScene().getWindow());
+
+        if (file == null) {
+            return;
+        }
+
+        try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
+            writer.println("Name,Amount,Due Date,Category,Notes");
+
+            for (DirectDebit debit : debitList) {
+                writer.printf("\"%s\",%.2f,\"%s\",\"%s\",\"%s\"%n",
+                        escapeCsv(debit.getName()),
+                        debit.getAmount(),
+                        escapeCsv(debit.getDueDate()),
+                        escapeCsv(debit.getCategory()),
+                        escapeCsv(debit.getNotes()));
+            }
+
+            showAlert(Alert.AlertType.INFORMATION, "Export Complete", "CSV exported successfully.");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Export Error", "Failed to export CSV file.");
+        }
+    }
+
+    private String escapeCsv(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("\"", "\"\"");
     }
 
     private void loadDebitsFromDatabase() {

@@ -23,6 +23,7 @@
                 <Button text="Add Direct Debit" onAction="#addDebit" />
                 <Button text="Update Selected" onAction="#updateSelectedDebit" />
                 <Button text="Delete Selected" onAction="#deleteSelectedDebit" />
+                <Button text="Export to CSV" onAction="#exportToCsv" />
             </HBox>
 
             <TextField fx:id="searchField" promptText="Search by name, category, notes, or due date..." />

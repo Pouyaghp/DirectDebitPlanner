@@ -69,6 +69,31 @@ public class DatabaseManager {
         return directDebit;
     }
 
+    public static void updateDirectDebit(DirectDebit directDebit) {
+        String sql = """
+                UPDATE direct_debits
+                SET name = ?, amount = ?, due_date = ?, category = ?, notes = ?
+                WHERE id = ?
+                """;
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, directDebit.getName());
+            pstmt.setDouble(2, directDebit.getAmount());
+            pstmt.setString(3, directDebit.getDueDate());
+            pstmt.setString(4, directDebit.getCategory());
+            pstmt.setString(5, directDebit.getNotes());
+            pstmt.setInt(6, directDebit.getId());
+
+            pstmt.executeUpdate();
+            System.out.println("Direct debit updated successfully");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public static List<DirectDebit> getAllDirectDebits() {
         List<DirectDebit> debits = new ArrayList<>();
 

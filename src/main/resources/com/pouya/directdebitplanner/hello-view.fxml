@@ -21,10 +21,14 @@
 
             <HBox spacing="10">
                 <Button text="Add Direct Debit" onAction="#addDebit" />
+                <Button text="Update Selected" onAction="#updateSelectedDebit" />
                 <Button text="Delete Selected" onAction="#deleteSelectedDebit" />
             </HBox>
 
             <TextField fx:id="searchField" promptText="Search by name, category, notes, or due date..." />
+
+            <Label text="Row colours: red = overdue-style, yellow = due within 3 days"
+                   style="-fx-font-size: 12px; -fx-text-fill: #666666;" />
 
             <TableView fx:id="debitTable" prefHeight="250">
                 <columns>

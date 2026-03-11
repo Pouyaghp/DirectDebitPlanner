@@ -9,6 +9,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -56,6 +57,7 @@ public class HelloController implements Initializable {
 
     private final ObservableList<DirectDebit> debitList = FXCollections.observableArrayList();
     private FilteredList<DirectDebit> filteredDebits;
+    private DirectDebit selectedDebitForEdit;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -66,8 +68,10 @@ public class HelloController implements Initializable {
         notesColumn.setCellValueFactory(new PropertyValueFactory<>("notes"));
 
         formatAmountColumn();
+        setupRowHighlighting();
         loadDebitsFromDatabase();
         setupSearchFilter();
+        setupTableSelection();
     }
 
     @FXML
@@ -120,6 +124,7 @@ public class HelloController implements Initializable {
             debitList.add(savedDebit);
             sortDebitsByDueDate();
             updateMonthlyTotal();
+            debitTable.refresh();
             clearFields();
 
             showAlert(Alert.AlertType.INFORMATION, "Success", "Direct debit added successfully.");
@@ -130,6 +135,87 @@ public class HelloController implements Initializable {
         } catch (Exception e) {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Error", "Something went wrong while saving the direct debit.");
+        }
+    }
+
+    @FXML
+    public void updateSelectedDebit() {
+        if (selectedDebitForEdit == null) {
+            showAlert(Alert.AlertType.WARNING, "No Selection", "Please select a direct debit to update.");
+            return;
+        }
+
+        try {
+            String name = nameField.getText().trim();
+            String amountText = amountField.getText().trim();
+            String dueDate = dateField.getText().trim();
+            String category = categoryField.getText().trim();
+            String notes = notesField.getText().trim();
+
+            if (name.isEmpty()) {
+                showAlert(Alert.AlertType.ERROR, "Validation Error", "Direct debit name is required.");
+                nameField.requestFocus();
+                return;
+            }
+
+            if (amountText.isEmpty()) {
+                showAlert(Alert.AlertType.ERROR, "Validation Error", "Amount is required.");
+                amountField.requestFocus();
+                return;
+            }
+
+            double amount = Double.parseDouble(amountText);
+
+            if (amount <= 0) {
+                showAlert(Alert.AlertType.ERROR, "Validation Error", "Amount must be greater than 0.");
+                amountField.requestFocus();
+                return;
+            }
+
+            if (!dueDate.isEmpty()) {
+                try {
+                    int day = Integer.parseInt(dueDate);
+                    if (day < 1 || day > 31) {
+                        showAlert(Alert.AlertType.ERROR, "Validation Error", "Due date must be a number between 1 and 31.");
+                        dateField.requestFocus();
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    showAlert(Alert.AlertType.ERROR, "Validation Error", "Due date must be a number between 1 and 31.");
+                    dateField.requestFocus();
+                    return;
+                }
+            }
+
+            DirectDebit updatedDebit = new DirectDebit(
+                    selectedDebitForEdit.getId(),
+                    name,
+                    amount,
+                    dueDate,
+                    category,
+                    notes
+            );
+
+            DatabaseManager.updateDirectDebit(updatedDebit);
+
+            int index = debitList.indexOf(selectedDebitForEdit);
+            if (index >= 0) {
+                debitList.set(index, updatedDebit);
+            }
+
+            sortDebitsByDueDate();
+            updateMonthlyTotal();
+            debitTable.refresh();
+            clearFields();
+
+            showAlert(Alert.AlertType.INFORMATION, "Success", "Direct debit updated successfully.");
+
+        } catch (NumberFormatException e) {
+            showAlert(Alert.AlertType.ERROR, "Validation Error", "Amount must be a valid number.");
+            amountField.requestFocus();
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Error", "Something went wrong while updating the direct debit.");
         }
     }
 
@@ -154,6 +240,11 @@ public class HelloController implements Initializable {
             debitList.remove(selectedDebit);
             sortDebitsByDueDate();
             updateMonthlyTotal();
+            debitTable.refresh();
+
+            if (selectedDebitForEdit != null && selectedDebitForEdit.getId() == selectedDebit.getId()) {
+                clearFields();
+            }
 
             showAlert(Alert.AlertType.INFORMATION, "Success", "Direct debit deleted successfully.");
         }
@@ -168,6 +259,7 @@ public class HelloController implements Initializable {
         debitTable.setItems(filteredDebits);
 
         updateMonthlyTotal();
+        debitTable.refresh();
     }
 
     private void setupSearchFilter() {
@@ -189,7 +281,58 @@ public class HelloController implements Initializable {
                         || debit.getDueDate().toLowerCase().contains(searchText)
                         || String.format("%.2f", debit.getAmount()).contains(searchText);
             });
+
+            debitTable.refresh();
         });
+    }
+
+    private void setupTableSelection() {
+        debitTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                selectedDebitForEdit = newValue;
+                nameField.setText(newValue.getName());
+                amountField.setText(String.valueOf(newValue.getAmount()));
+                dateField.setText(newValue.getDueDate());
+                categoryField.setText(newValue.getCategory());
+                notesField.setText(newValue.getNotes());
+            }
+        });
+    }
+
+    private void setupRowHighlighting() {
+        debitTable.setRowFactory(tv -> new TableRow<>() {
+            @Override
+            protected void updateItem(DirectDebit debit, boolean empty) {
+                super.updateItem(debit, empty);
+
+                if (empty || debit == null) {
+                    setStyle("");
+                    return;
+                }
+
+                String style = getRowStyleForDebit(debit);
+                setStyle(style);
+            }
+        });
+    }
+
+    private String getRowStyleForDebit(DirectDebit debit) {
+        try {
+            int dueDay = Integer.parseInt(debit.getDueDate());
+            int today = LocalDate.now().getDayOfMonth();
+
+            if (dueDay < today) {
+                return "-fx-background-color: #ffe5e5;";
+            }
+
+            if (dueDay >= today && dueDay <= today + 3) {
+                return "-fx-background-color: #fff4cc;";
+            }
+
+        } catch (Exception ignored) {
+        }
+
+        return "";
     }
 
     private void sortDebitsByDueDate() {
@@ -233,6 +376,8 @@ public class HelloController implements Initializable {
         dateField.clear();
         categoryField.clear();
         notesField.clear();
+        selectedDebitForEdit = null;
+        debitTable.getSelectionModel().clearSelection();
         nameField.requestFocus();
     }
 

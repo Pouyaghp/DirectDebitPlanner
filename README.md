@@ -32,4 +32,4 @@ pom.xml → Maven dependencies
 
 ## Screenshot
 
-![Direct Debit Planner](images/app.png)
+![Direct Debit Planner](src/images/app.png)

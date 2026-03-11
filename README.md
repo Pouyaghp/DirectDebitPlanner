@@ -29,3 +29,7 @@ HelloApplication.java
 src/main/java → application code  
 src/main/resources → UI files (FXML)  
 pom.xml → Maven dependencies
+
+## Screenshot
+
+![App Screenshot](screenshot.png)
